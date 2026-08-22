@@ -1,49 +1,75 @@
 * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-body { background-color: #0b1120; color: #f8fafc; padding: 24px; }
-.container { max-width: 1350px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+body { background-color: #080d1a; color: #f8fafc; padding: 24px; }
+.container { max-width: 1600px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
 
 header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
-header h1 { font-size: 22px; color: #38bdf8; }
-header p { color: #94a3b8; font-size: 13px; }
+header h1 { font-size: 24px; color: #38bdf8; }
+header p { color: #94a3b8; font-size: 14px; }
 .timestamp { font-size: 12px; color: #64748b; margin-top: 4px; }
 
-.controls-bar { display: flex; gap: 20px; align-items: center; background: #1e293b; padding: 10px 16px; border-radius: 8px; border: 1px solid #334155; }
+.controls-bar { display: flex; gap: 20px; align-items: center; background: #131d31; padding: 10px 16px; border-radius: 8px; border: 1px solid #223250; }
 .control-group { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #cbd5e1; }
-.btn-group { display: flex; border: 1px solid #475569; border-radius: 6px; overflow: hidden; }
-.toggle-btn { background: #0f172a; border: none; color: #94a3b8; padding: 6px 14px; font-size: 12px; font-weight: 600; cursor: pointer; }
+.btn-group { display: flex; border: 1px solid #334155; border-radius: 6px; overflow: hidden; }
+.toggle-btn { background: #0f172a; border: none; color: #94a3b8; padding: 6px 16px; font-size: 13px; font-weight: 600; cursor: pointer; }
 .toggle-btn.active { background: #0284c7; color: #ffffff; }
-select { background: #0f172a; border: 1px solid #475569; color: #f8fafc; padding: 6px 10px; border-radius: 6px; font-size: 12px; }
+select { background: #0f172a; border: 1px solid #334155; color: #f8fafc; padding: 6px 12px; border-radius: 6px; font-size: 13px; }
 
+/* Quadrants Grid */
 .quadrant-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
-@media (max-width: 900px) { .quadrant-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 1000px) { .quadrant-grid { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 600px) { .quadrant-grid { grid-template-columns: 1fr; } }
 
-.quadrant-card { border-radius: 10px; padding: 14px; display: flex; flex-direction: column; min-height: 240px; }
-.quadrant-card.improving { background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.3); }
-.quadrant-card.leading { background: rgba(34, 197, 94, 0.08); border: 1px solid rgba(34, 197, 94, 0.3); }
-.quadrant-card.weakening { background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.3); }
-.quadrant-card.lagging { background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.3); }
+.quadrant-card { border-radius: 12px; padding: 18px; display: flex; flex-direction: column; min-height: 280px; }
+.quadrant-card.improving { background: rgba(59, 130, 246, 0.12); border: 1px solid rgba(59, 130, 246, 0.35); }
+.quadrant-card.leading { background: rgba(34, 197, 94, 0.12); border: 1px solid rgba(34, 197, 94, 0.35); }
+.quadrant-card.weakening { background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.35); }
+.quadrant-card.lagging { background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.35); }
 
-.quadrant-header { display: flex; justify-content: space-between; align-items: center; font-size: 15px; font-weight: 700; }
+.quadrant-header { display: flex; justify-content: space-between; align-items: center; font-size: 17px; font-weight: 700; }
 .quadrant-card.improving .title { color: #60a5fa; }
 .quadrant-card.leading .title { color: #4ade80; }
 .quadrant-card.weakening .title { color: #fbbf24; }
 .quadrant-card.lagging .title { color: #f87171; }
 
-.count-badge { padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 700; color: #fff; }
+.count-badge { padding: 3px 10px; border-radius: 14px; font-size: 12px; font-weight: 700; color: #fff; }
 .quadrant-card.improving .count-badge { background: #2563eb; }
 .quadrant-card.leading .count-badge { background: #16a34a; }
 .quadrant-card.weakening .count-badge { background: #d97706; }
 .quadrant-card.lagging .count-badge { background: #dc2626; }
-.quadrant-sub { font-size: 11px; color: #94a3b8; margin: 4px 0 10px 0; }
+.quadrant-sub { font-size: 12px; color: #94a3b8; margin: 4px 0 14px 0; }
 
-.sector-list { list-style: none; display: flex; flex-direction: column; gap: 6px; }
-.sector-item { display: flex; align-items: center; font-size: 12px; color: #e2e8f0; font-weight: 500; }
-.sector-dot { width: 7px; height: 7px; border-radius: 50%; margin-right: 8px; }
+.sector-list { list-style: none; display: flex; flex-direction: column; gap: 8px; max-height: 240px; overflow-y: auto; }
+.sector-item { display: flex; align-items: center; font-size: 13px; color: #e2e8f0; font-weight: 500; }
+.sector-dot { width: 8px; height: 8px; border-radius: 50%; margin-right: 10px; flex-shrink: 0; }
 .quadrant-card.improving .sector-dot { background: #60a5fa; }
 .quadrant-card.leading .sector-dot { background: #4ade80; }
 .quadrant-card.weakening .sector-dot { background: #fbbf24; }
 .quadrant-card.lagging .sector-dot { background: #f87171; }
 
-.card { background-color: #1e293b; border-radius: 12px; padding: 12px; border: 1px solid #334155; }
-#rrgPlotly { width: 100%; height: 560px; }
+/* Filter Section */
+.card { background-color: #131d31; border-radius: 12px; padding: 20px; border: 1px solid #223250; }
+.filter-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.filter-header h3 { font-size: 15px; color: #cbd5e1; }
+.filter-actions { display: flex; gap: 10px; }
+.action-btn { background: #1e293b; border: 1px solid #334155; color: #cbd5e1; padding: 4px 12px; border-radius: 6px; font-size: 12px; cursor: pointer; }
+.action-btn:hover { background: #334155; color: #fff; }
+
+.checkbox-grid { display: flex; flex-wrap: wrap; gap: 10px; }
+.sector-checkbox-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #0b1120;
+    padding: 6px 12px;
+    border-radius: 20px;
+    border: 1px solid #1e293b;
+    font-size: 12px;
+    cursor: pointer;
+    user-select: none;
+    color: #94a3b8;
+}
+.sector-checkbox-label.checked { border-color: #0284c7; background: rgba(2, 132, 199, 0.15); color: #f8fafc; }
+.sector-checkbox-label input { cursor: pointer; }
+
+/* Expanded Chart Area */
+#rrgPlotly { width: 100%; height: 750px; }
