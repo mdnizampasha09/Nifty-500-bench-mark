@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.27.1/plotly.min.js"></script>
 </head>
-<body>
+<body class="theme-midnight">
     <div class="container">
         <header>
             <div class="header-main">
@@ -33,61 +33,79 @@
                         <option value="12">12 Periods</option>
                     </select>
                 </div>
+                <!-- 12 Background Color Themes -->
+                <div class="control-group">
+                    <label>Background:</label>
+                    <select id="bg-theme-select">
+                        <option value="midnight">1. Midnight Navy</option>
+                        <option value="deepblack">2. OLED Pure Black</option>
+                        <option value="charcoal">3. Charcoal Slate</option>
+                        <option value="cyberpunk">4. Cyberpunk Indigo</option>
+                        <option value="forest">5. Deep Forest Green</option>
+                        <option value="dracula">6. Dracula Purple</option>
+                        <option value="nord">7. Nord Arctic Blue</option>
+                        <option value="espresso">8. Dark Espresso</option>
+                        <option value="burgundy">9. Royal Burgundy</option>
+                        <option value="graphite">10. Steel Graphite</option>
+                        <option value="solarized">11. Solarized Dark</option>
+                        <option value="light">12. Classic Light</option>
+                    </select>
+                </div>
             </div>
         </header>
 
-        <!-- Quadrant Cards Grid -->
+        <!-- 4-Quadrant Cards with Checkbox Controls -->
         <div class="quadrant-grid">
             <div class="quadrant-card improving">
                 <div class="quadrant-header">
-                    <span class="title">Improving</span>
+                    <label class="quadrant-title-group">
+                        <input type="checkbox" id="master-improving" checked class="quadrant-master-cb">
+                        <span class="title">Improving</span>
+                    </label>
                     <span id="badge-improving" class="count-badge">0</span>
                 </div>
                 <div class="quadrant-sub">Lagging RS, Strong Momentum</div>
-                <ul id="list-improving" class="sector-list"></ul>
+                <div id="list-improving" class="sector-checkbox-list"></div>
             </div>
 
             <div class="quadrant-card leading">
                 <div class="quadrant-header">
-                    <span class="title">Leading</span>
+                    <label class="quadrant-title-group">
+                        <input type="checkbox" id="master-leading" checked class="quadrant-master-cb">
+                        <span class="title">Leading</span>
+                    </label>
                     <span id="badge-leading" class="count-badge">0</span>
                 </div>
                 <div class="quadrant-sub">High RS, Strong Momentum</div>
-                <ul id="list-leading" class="sector-list"></ul>
+                <div id="list-leading" class="sector-checkbox-list"></div>
             </div>
 
             <div class="quadrant-card weakening">
                 <div class="quadrant-header">
-                    <span class="title">Weakening</span>
+                    <label class="quadrant-title-group">
+                        <input type="checkbox" id="master-weakening" checked class="quadrant-master-cb">
+                        <span class="title">Weakening</span>
+                    </label>
                     <span id="badge-weakening" class="count-badge">0</span>
                 </div>
                 <div class="quadrant-sub">High RS, Slowing Momentum</div>
-                <ul id="list-weakening" class="sector-list"></ul>
+                <div id="list-weakening" class="sector-checkbox-list"></div>
             </div>
 
             <div class="quadrant-card lagging">
                 <div class="quadrant-header">
-                    <span class="title">Lagging</span>
+                    <label class="quadrant-title-group">
+                        <input type="checkbox" id="master-lagging" checked class="quadrant-master-cb">
+                        <span class="title">Lagging</span>
+                    </label>
                     <span id="badge-lagging" class="count-badge">0</span>
                 </div>
                 <div class="quadrant-sub">Low RS, Slowing Momentum</div>
-                <ul id="list-lagging" class="sector-list"></ul>
+                <div id="list-lagging" class="sector-checkbox-list"></div>
             </div>
         </div>
 
-        <!-- Sector Filter Box -->
-        <div class="card filter-card">
-            <div class="filter-header">
-                <h3>Select Sectors to Display</h3>
-                <div class="filter-actions">
-                    <button id="btn-select-all" class="action-btn">Select All</button>
-                    <button id="btn-deselect-all" class="action-btn">Deselect All</button>
-                </div>
-            </div>
-            <div id="sector-checkbox-container" class="checkbox-grid"></div>
-        </div>
-
-        <!-- Expanded RRG Chart -->
+        <!-- RRG Chart Area -->
         <div class="card chart-card">
             <div id="rrgPlotly"></div>
         </div>
