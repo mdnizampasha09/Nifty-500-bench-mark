@@ -1,7 +1,24 @@
 let globalData = null;
 let currentMode = "daily";
 let currentTail = 5;
+let currentBgTheme = "midnight";
 let selectedSectors = new Set();
+
+// Background Color Mapping for Plotly Chart Elements
+const BG_THEME_PALETTES = {
+    midnight: { paper: '#131d31', plot: '#080d1a', grid: '#223250', font: '#94a3b8' },
+    deepblack: { paper: '#111111', plot: '#000000', grid: '#262626', font: '#a3a3a3' },
+    charcoal: { paper: '#27272a', plot: '#18181b', grid: '#3f3f46', font: '#a1a1aa' },
+    cyberpunk: { paper: '#1c0a35', plot: '#0f051d', grid: '#3c1271', font: '#c4b5fd' },
+    forest: { paper: '#0b2e1e', plot: '#051b11', grid: '#144f34', font: '#6ee7b7' },
+    dracula: { paper: '#44475a', plot: '#282a36', grid: '#6272a4', font: '#bd93f9' },
+    nord: { paper: '#3b4252', plot: '#2e3440', grid: '#4c566a', font: '#88c0d0' },
+    espresso: { paper: '#2c1f17', plot: '#1c140e', grid: '#443024', font: '#d97706' },
+    burgundy: { paper: '#300a14', plot: '#1a050b', grid: '#521223', font: '#fda4af' },
+    graphite: { paper: '#2a313d', plot: '#1f242d', grid: '#3e4859', font: '#94a3b8' },
+    solarized: { paper: '#073642', plot: '#002b36', grid: '#586e75', font: '#2aa198' },
+    light: { paper: '#ffffff', plot: '#f1f5f9', grid: '#cbd5e1', font: '#475569' }
+};
 
 document.addEventListener("DOMContentLoaded", () => {
     setupEventListeners();
@@ -9,7 +26,6 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 function setupEventListeners() {
-    // Timeframe toggle
     document.querySelectorAll(".toggle-btn").forEach(btn => {
         btn.addEventListener("click", (e) => {
             document.querySelectorAll(".toggle-btn").forEach(b => b.classList.remove("active"));
@@ -19,24 +35,33 @@ function setupEventListeners() {
         });
     });
 
-    // Tail length selection
     document.getElementById("tail-select").addEventListener("change", (e) => {
         currentTail = parseInt(e.target.value, 10);
         updateDashboard();
     });
 
-    // Bulk Select / Deselect
-    document.getElementById("btn-select-all").addEventListener("click", () => {
-        const dataset = getActiveDataset();
-        dataset.forEach(s => selectedSectors.add(s.sector));
-        renderCheckboxes(dataset);
-        updateDashboard();
+    // Screen Background Changer
+    document.getElementById("bg-theme-select").addEventListener("change", (e) => {
+        currentBgTheme = e.target.value;
+        document.body.className = `theme-${currentBgTheme}`;
+        renderActiveChart();
     });
 
-    document.getElementById("btn-deselect-all").addEventListener("click", () => {
-        selectedSectors.clear();
-        renderCheckboxes(getActiveDataset());
-        updateDashboard();
+    ["improving", "leading", "weakening", "lagging"].forEach(quad => {
+        const masterCb = document.getElementById(`master-${quad}`);
+        if (masterCb) {
+            masterCb.addEventListener("change", (e) => {
+                const list = document.getElementById(`list-${quad}`);
+                if (list) {
+                    list.querySelectorAll("input[type='checkbox']").forEach(cb => {
+                        cb.checked = e.target.checked;
+                        if (e.target.checked) selectedSectors.add(cb.value);
+                        else selectedSectors.delete(cb.value);
+                    });
+                }
+                renderActiveChart();
+            });
+        }
     });
 }
 
@@ -56,10 +81,8 @@ async function fetchDataAndRender() {
             timestampEl.textContent = `Last Scraped: ${globalData.last_updated}`;
         }
 
-        // Initialize all sectors as selected
         const dataset = getActiveDataset();
         dataset.forEach(s => selectedSectors.add(s.sector));
-        renderCheckboxes(dataset);
 
         updateDashboard();
     } catch (err) {
@@ -67,48 +90,13 @@ async function fetchDataAndRender() {
     }
 }
 
-function renderCheckboxes(sectors) {
-    const container = document.getElementById("sector-checkbox-container");
-    if (!container) return;
-    container.innerHTML = "";
-
-    sectors.forEach(sec => {
-        const label = document.createElement("label");
-        const isChecked = selectedSectors.has(sec.sector);
-        label.className = `sector-checkbox-label ${isChecked ? 'checked' : ''}`;
-        
-        const checkbox = document.createElement("input");
-        checkbox.type = "checkbox";
-        checkbox.checked = isChecked;
-        checkbox.value = sec.sector;
-
-        checkbox.addEventListener("change", (e) => {
-            if (e.target.checked) {
-                selectedSectors.add(sec.sector);
-                label.classList.add("checked");
-            } else {
-                selectedSectors.delete(sec.sector);
-                label.classList.remove("checked");
-            }
-            updateDashboard();
-        });
-
-        label.appendChild(checkbox);
-        label.appendChild(document.createTextNode(sec.sector));
-        container.appendChild(label);
-    });
-}
-
 function updateDashboard() {
     const allSectors = getActiveDataset();
-    populateQuadrants(allSectors);
-    
-    // Filter active sectors for chart rendering
-    const activeSectors = allSectors.filter(s => selectedSectors.has(s.sector));
-    renderPlotlyRRG(activeSectors);
+    populateQuadrantsWithCheckboxes(allSectors);
+    renderActiveChart();
 }
 
-function populateQuadrants(sectors) {
+function populateQuadrantsWithCheckboxes(sectors) {
     const categories = {
         Improving: { list: document.getElementById("list-improving"), badge: document.getElementById("badge-improving"), count: 0 },
         Leading: { list: document.getElementById("list-leading"), badge: document.getElementById("badge-leading"), count: 0 },
@@ -122,10 +110,24 @@ function populateQuadrants(sectors) {
         const target = categories[sec.quadrant];
         if (target && target.list) {
             target.count++;
-            const li = document.createElement("li");
-            li.className = "sector-item";
-            li.innerHTML = `<span class="sector-dot"></span><span>${sec.sector}</span>`;
-            target.list.appendChild(li);
+            const isChecked = selectedSectors.has(sec.sector);
+            const label = document.createElement("label");
+            label.className = "sector-checkbox-item";
+
+            const cb = document.createElement("input");
+            cb.type = "checkbox";
+            cb.value = sec.sector;
+            cb.checked = isChecked;
+
+            cb.addEventListener("change", (e) => {
+                if (e.target.checked) selectedSectors.add(sec.sector);
+                else selectedSectors.delete(sec.sector);
+                renderActiveChart();
+            });
+
+            label.appendChild(cb);
+            label.insertAdjacentHTML("beforeend", `<span class="sector-dot"></span><span>${sec.sector}</span>`);
+            target.list.appendChild(label);
         }
     });
 
@@ -134,36 +136,45 @@ function populateQuadrants(sectors) {
     });
 }
 
+function renderActiveChart() {
+    const allSectors = getActiveDataset();
+    const activeSectors = allSectors.filter(s => selectedSectors.has(s.sector));
+    renderPlotlyRRG(activeSectors);
+}
+
 function renderPlotlyRRG(sectors) {
+    const theme = BG_THEME_PALETTES[currentBgTheme] || BG_THEME_PALETTES.midnight;
+    const defaultColors = ["#00f0ff", "#39ff14", "#ff007f", "#ffe600", "#b026ff", "#ff5e00", "#00ffa3", "#ff003c", "#7000ff", "#00b8ff", "#ff80df", "#9dff00", "#22c55e", "#3b82f6", "#f59e0b", "#ef4444", "#a855f7", "#06b6d4"];
+    
     const traces = [];
     let allX = [100];
     let allY = [100];
 
-    sectors.forEach(sec => {
+    sectors.forEach((sec, idx) => {
         const fullTrail = sec.trail || [{ x: sec.x, y: sec.y }];
         const trailSlice = fullTrail.slice(-currentTail);
+        const sectorColor = defaultColors[idx % defaultColors.length];
         
         const xPts = trailSlice.map(p => p.x);
         const yPts = trailSlice.map(p => p.y);
         allX.push(...xPts);
         allY.push(...yPts);
 
-        const markerSizes = trailSlice.map((_, idx) => (idx === trailSlice.length - 1 ? 12 : 5));
+        const markerSizes = trailSlice.map((_, i) => (i === trailSlice.length - 1 ? 12 : 5));
 
         traces.push({
             x: xPts,
             y: yPts,
             mode: 'lines+markers+text',
             name: sec.sector,
-            text: trailSlice.map((_, idx) => (idx === trailSlice.length - 1 ? ` <b>${sec.sector}</b>` : '')),
+            text: trailSlice.map((_, i) => (i === trailSlice.length - 1 ? ` <b>${sec.sector}</b>` : '')),
             textposition: 'top right',
-            textfont: { size: 12, color: '#f8fafc' },
-            line: { shape: 'spline', smoothing: 1.2, width: 2.5 },
-            marker: { size: markerSizes }
+            textfont: { size: 12, color: currentBgTheme === 'light' ? '#0f172a' : '#f8fafc' },
+            line: { shape: 'spline', smoothing: 1.2, width: 2.5, color: sectorColor },
+            marker: { size: markerSizes, color: sectorColor }
         });
     });
 
-    // Dynamic auto-zoom calculation around origin (100, 100) and visible data
     const minX = Math.min(...allX);
     const maxX = Math.max(...allX);
     const minY = Math.min(...allY);
@@ -180,32 +191,30 @@ function renderPlotlyRRG(sectors) {
             text: `NSE SECTOR ROTATION vs NIFTY 500 (${currentMode.toUpperCase()} - ${currentTail} PERIODS)`,
             font: { size: 16, color: '#38bdf8' }
         },
-        paper_bgcolor: '#131d31',
-        plot_bgcolor: '#0b1120',
+        paper_bgcolor: theme.paper,
+        plot_bgcolor: theme.plot,
         dragmode: 'pan',
-        showlegend: false, // Legend removed from beneath the chart
+        showlegend: false,
         margin: { l: 60, r: 40, t: 50, b: 40 },
         xaxis: {
-            title: { text: 'JdK RS-Ratio (Relative Strength)', font: { color: '#94a3b8', size: 13 } },
-            gridcolor: '#1e293b',
+            title: { text: 'JdK RS-Ratio (Relative Strength)', font: { color: theme.font, size: 13 } },
+            gridcolor: theme.grid,
             range: xRange,
             zeroline: false,
-            tickfont: { color: '#94a3b8' }
+            tickfont: { color: theme.font }
         },
         yaxis: {
-            title: { text: 'JdK RS-Momentum (Momentum)', font: { color: '#94a3b8', size: 13 } },
-            gridcolor: '#1e293b',
+            title: { text: 'JdK RS-Momentum (Momentum)', font: { color: theme.font, size: 13 } },
+            gridcolor: theme.grid,
             range: yRange,
             zeroline: false,
-            tickfont: { color: '#94a3b8' }
+            tickfont: { color: theme.font }
         },
         shapes: [
-            // Dynamic Zoomed Colored Quadrant Zones
             { type: 'rect', xref: 'x', yref: 'y', x0: 100, y0: 100, x1: 200, y1: 200, fillcolor: 'rgba(34, 197, 94, 0.10)', line: { width: 0 }, layer: 'below' },
             { type: 'rect', xref: 'x', yref: 'y', x0: 100, y0: 0, x1: 200, y1: 100, fillcolor: 'rgba(245, 158, 11, 0.10)', line: { width: 0 }, layer: 'below' },
             { type: 'rect', xref: 'x', yref: 'y', x0: 0, y0: 0, x1: 100, y1: 100, fillcolor: 'rgba(239, 68, 68, 0.10)', line: { width: 0 }, layer: 'below' },
             { type: 'rect', xref: 'x', yref: 'y', x0: 0, y0: 100, x1: 100, y1: 200, fillcolor: 'rgba(59, 130, 246, 0.10)', line: { width: 0 }, layer: 'below' },
-            // Centered Reference Crosshairs
             { type: 'line', xref: 'x', yref: 'paper', x0: 100, y0: 0, x1: 100, y1: 1, line: { color: '#38bdf8', width: 2, dash: 'dash' } },
             { type: 'line', xref: 'paper', yref: 'y', x0: 0, y0: 100, x1: 1, y1: 100, line: { color: '#38bdf8', width: 2, dash: 'dash' } }
         ],
