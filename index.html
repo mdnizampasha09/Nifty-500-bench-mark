@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nifty 500 Benchmark Tracking Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- Chart.js for building high-performance canvas graphs -->
+    <script src="https://jsdelivr.net"></script>
+</head>
+<body>
+    <div class="dashboard-container">
+        <header>
+            <h1>📈 NIFTY 500 Benchmark Dashboard</h1>
+            <p>Tracking India's top 500 multi-cap companies across market segments</p>
+        </header>
+
+        <section class="metrics-grid">
+            <div class="metric-card">
+                <h3>Index Level</h3>
+                <p class="value" id="index-val">23,530.30</p>
+                <p class="subtext status-green">▲ Broad Market Baseline</p>
+            </div>
+            <div class="metric-card">
+                <h3>Market Cap Coverage</h3>
+                <p class="value">~92.04%</p>
+                <p class="subtext">Of total NSE Free Float</p>
+            </div>
+            <div class="metric-card">
+                <h3>Traded Value Ratio</h3>
+                <p class="value">~84.07%</p>
+                <p class="subtext">Of overall NSE Liquidity</p>
+            </div>
+        </section>
+
+        <section class="chart-section">
+            <h2>Index Allocation by Industry Segment (%)</h2>
+            <div class="canvas-wrapper">
+                <canvas id="niftyWeightChart"></canvas>
+            </div>
+        </section>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
