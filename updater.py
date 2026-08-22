@@ -7,7 +7,7 @@ import yfinance as yf
 def calculate_rrg(sectors, benchmark_symbol, window_ratio=14, window_mom=14, tail_length=4):
     # Fetch historical daily data for the past 6 months to calculate smooth moving averages
     tickers = sectors + [benchmark_symbol]
-    data = yf.download(tickers, period="6m", interval="1d")['Close']
+    data = yf.download(tickers, period="6mo", interval="1d")['Close']
     
     # Clean column mapping formatting
     data.columns = [col.replace('.NS', '') for col in data.columns]
