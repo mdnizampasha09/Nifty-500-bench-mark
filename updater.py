@@ -1,82 +1,123 @@
-import os
 import json
 import numpy as np
 import pandas as pd
 import yfinance as yf
+from datetime import datetime
 
-def calculate_rrg(sectors, benchmark_symbol, window_ratio=14, window_mom=14, tail_length=4):
-    # Fetch historical daily data for the past 6 months to calculate smooth moving averages
-    tickers = sectors + [benchmark_symbol]
-    data = yf.download(tickers, period="6mo", interval="1d")['Close']
+# Sector Mapping with valid Yahoo Finance Tickers
+NSE_SECTORS = {
+    "Nifty Bank": "^NSEBANK",
+    "Nifty IT": "^CNXIT",
+    "Nifty Auto": "^CNXAUTO",
+    "Nifty FMCG": "^CNXFMCG",
+    "Nifty Infra": "^CNXINFRA",
+    "Nifty Realty": "^CNXREALTY",
+    "Nifty Pharma": "^CNXPHARMA",
+    "Nifty Metal": "^CNXMETAL",
+    "Nifty Energy": "^CNXENERGY"
+}
+
+BENCHMARK = "^CRSLDX" # Nifty 500 (Fallback: ^NSEI for Nifty 50)
+
+def fetch_data(tickers, period="1y"):
+    """Downloads adjusted close prices safely."""
+    all_tickers = list(tickers.values()) + [BENCHMARK]
+    print(f"Fetching market data for: {all_tickers}...")
     
-    # Clean column mapping formatting
-    data.columns = [col.replace('.NS', '') for col in data.columns]
-    bench_clean = benchmark_symbol.replace('.NS', '')
+    df = yf.download(all_tickers, period=period, progress=False)["Close"]
     
-    output_sectors = []
+    # Fallback to Nifty 50 if Nifty 500 is unavailable
+    if BENCHMARK not in df or df[BENCHMARK].dropna().empty:
+        print("Falling back benchmark to Nifty 50 (^NSEI)...")
+        nifty50 = yf.download("^NSEI", period=period, progress=False)["Close"]
+        df[BENCHMARK] = nifty50
+        
+    return df
+
+def calculate_rrg(df, sectors, benchmark_symbol, window_rs=10, window_mom=10, trail_len=5):
+    """Calculates JdK RS-Ratio and RS-Momentum coordinates for RRG."""
+    results = []
     
-    for sector in sectors:
-        sec_clean = sector.replace('.NS', '')
+    if benchmark_symbol not in df.columns:
+        print("Benchmark column missing.")
+        return results
+
+    bench_series = df[benchmark_symbol].ffill().bfill()
+
+    for sector_name, ticker in sectors.items():
+        if ticker not in df.columns or df[ticker].dropna().empty:
+            print(f"Skipping {sector_name} ({ticker}) - No data returned.")
+            continue
+
+        sec_series = df[ticker].ffill().bfill()
         
-        # 1. Raw Relative Strength Line
-        raw_rs = (data[sec_clean] / data[bench_clean]) * 100
+        # 1. Relative Strength (RS)
+        rs_raw = (sec_series / bench_series) * 100
         
-        # 2. Compute RS-Ratio (Normalized EMA)
-        ema_rs = raw_rs.ewm(span=window_ratio, adjust=False).mean()
-        std_rs = raw_rs.rolling(window=window_ratio).std()
-        # Avoid division by zero bugs
-        std_rs = std_rs.replace(0, np.nan).bfill()
-        rs_ratio = 100 + ((raw_rs - ema_rs) / std_rs)
+        # 2. JdK RS-Ratio (Moving Average standardized)
+        rs_mean = rs_raw.rolling(window=window_rs).mean()
+        rs_std = rs_raw.rolling(window=window_rs).std().replace(0, np.nan)
+        rs_ratio = 100 + ((rs_raw - rs_mean) / rs_std)
+
+        # 3. JdK RS-Momentum (Rate of change of RS-Ratio)
+        mom_mean = rs_ratio.rolling(window=window_mom).mean()
+        mom_std = rs_ratio.rolling(window=window_mom).std().replace(0, np.nan)
+        rs_momentum = 100 + ((rs_ratio - mom_mean) / mom_std)
+
+        # Clean NaN values
+        combined = pd.DataFrame({"RS_Ratio": rs_ratio, "RS_Momentum": rs_momentum}).dropna()
+
+        if len(combined) < trail_len:
+            continue
+
+        # Extract trail history
+        trail = []
+        for idx in range(-trail_len, 0):
+            row = combined.iloc[idx]
+            trail.append({
+                "x": round(float(row["RS_Ratio"]), 2),
+                "y": round(float(row["RS_Momentum"]), 2),
+                "date": str(combined.index[idx].strftime("%Y-%m-%d"))
+            })
+
+        latest = trail[-1]
         
-        # 3. Compute RS-Momentum (Rate of Change of RS-Ratio)
-        rs_mom_raw = rs_ratio.pct_change(periods=window_mom) * 100
-        ema_mom = rs_mom_raw.ewm(span=window_mom, adjust=False).mean()
-        std_mom = rs_mom_raw.rolling(window=window_mom).std()
-        std_mom = std_mom.replace(0, np.nan).bfill()
-        rs_momentum = 100 + ((rs_mom_raw - ema_mom) / std_mom)
-        
-        # Combine metrics into a single structural matrix
-        df_rrg = pd.DataFrame({'x': rs_ratio, 'y': rs_momentum}).dropna()
-        
-        # Extract the trailing data points
-        trail_points = df_rrg.tail(tail_length).to_dict(orient='records')
-        
-        # Define current mathematical quadrant quadrant location
-        latest = trail_points[-1]
-        if latest['x'] >= 100 and latest['y'] >= 100:
+        # Determine Quadrant
+        quadrant = "Leading"
+        if latest["x"] >= 100 and latest["y"] >= 100:
             quadrant = "Leading"
-        elif latest['x'] >= 100 and latest['y'] < 100:
+        elif latest["x"] >= 100 and latest["y"] < 100:
             quadrant = "Weakening"
-        elif latest['x'] < 100 and latest['y'] < 100:
+        elif latest["x"] < 100 and latest["y"] < 100:
             quadrant = "Lagging"
         else:
             quadrant = "Improving"
-            
-        output_sectors.append({
-            "name": sec_clean,
+
+        results.append({
+            "sector": sector_name,
+            "ticker": ticker,
             "quadrant": quadrant,
-            "trail": [{ "x": round(p['x'], 2), "y": round(p['y'], 2) } for p in trail_points]
+            "x": latest["x"],
+            "y": latest["y"],
+            "trail": trail
         })
-        
-    return output_sectors
+
+    return results
+
+def main():
+    df = fetch_data(NSE_SECTORS, period="1y")
+    data = calculate_rrg(df, NSE_SECTORS, BENCHMARK)
+    
+    payload = {
+        "last_updated": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC"),
+        "benchmark": "Nifty 500 Benchmark",
+        "data": data
+    }
+
+    with open("data.json", "w") as f:
+        json.dump(payload, f, indent=2)
+
+    print("Successfully generated data.json with updated RRG coordinates.")
 
 if __name__ == "__main__":
-    # Primary Indian Sector Indexes tracked via Yahoo Finance tickers
-    nse_sectors = [
-        "^CNXBANK",     # Nifty Bank
-        "^CNXIT",       # Nifty IT
-        "^CNXAUTO",     # Nifty Auto
-        "^CNXFMCG",     # Nifty FMCG
-        "^CNXREALTY",   # Nifty Realty
-        "^CNXINFRA"     # Nifty Infra
-    ]
-    # Nifty 500 Index Benchmark Target
-    benchmark = "^CRSLDX" 
-    
-    print("Fetching and executing mathematical JdK matrices...")
-    result_data = calculate_rrg(nse_sectors, benchmark)
-    
-    # Write cleanly to file system
-    with open("data.json", "w") as f:
-        json.dump(result_data, f, indent=4)
-    print("Successfully compiled and outputted to data.json!")
+    main()
