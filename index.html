@@ -5,19 +5,41 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nifty 500 Relative Rotation Graph</title>
     <link rel="stylesheet" href="styles.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+    <!-- Plotly CDN for smooth Pan/Zoom & 4-Quadrant Backgrounds -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.27.1/plotly.min.js"></script>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>📈 NIFTY 500 Relative Rotation Graph (RRG)</h1>
-            <p>Tracking Sector Rotation & Momentum Relative to Benchmark</p>
-            <div id="last-updated" class="timestamp">Fetching data...</div>
+            <div class="header-main">
+                <h1>📈 NIFTY 500 Relative Rotation Graph (RRG)</h1>
+                <p>Tracking Sector Rotation & Momentum Relative to Benchmark</p>
+                <div id="last-updated" class="timestamp">Fetching data...</div>
+            </div>
+            
+            <!-- Controls Bar -->
+            <div class="controls-bar">
+                <div class="control-group">
+                    <label>Timeframe:</label>
+                    <div class="btn-group">
+                        <button class="toggle-btn active" data-timeframe="daily">Daily</button>
+                        <button class="toggle-btn" data-timeframe="weekly">Weekly</button>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label>Tail Length:</label>
+                    <select id="tail-select">
+                        <option value="3">3 Periods</option>
+                        <option value="5" selected>5 Periods</option>
+                        <option value="8">8 Periods</option>
+                        <option value="12">12 Periods</option>
+                    </select>
+                </div>
+            </div>
         </header>
 
-        <!-- 4-Quadrant Sector Layout -->
+        <!-- 4-Quadrant Cards -->
         <div class="quadrant-grid">
-            <!-- Improving (Blue) -->
             <div class="quadrant-card improving">
                 <div class="quadrant-header">
                     <span class="title">Improving</span>
@@ -27,7 +49,6 @@
                 <ul id="list-improving" class="sector-list"></ul>
             </div>
 
-            <!-- Leading (Green) -->
             <div class="quadrant-card leading">
                 <div class="quadrant-header">
                     <span class="title">Leading</span>
@@ -37,7 +58,6 @@
                 <ul id="list-leading" class="sector-list"></ul>
             </div>
 
-            <!-- Weakening (Orange/Yellow) -->
             <div class="quadrant-card weakening">
                 <div class="quadrant-header">
                     <span class="title">Weakening</span>
@@ -47,7 +67,6 @@
                 <ul id="list-weakening" class="sector-list"></ul>
             </div>
 
-            <!-- Lagging (Red) -->
             <div class="quadrant-card lagging">
                 <div class="quadrant-header">
                     <span class="title">Lagging</span>
@@ -58,12 +77,9 @@
             </div>
         </div>
 
-        <!-- Scatter Map Chart -->
+        <!-- 4-Quadrant Plotly Scatter Chart -->
         <div class="card chart-card">
-            <h2>Relative Rotation Scatter Map</h2>
-            <div class="chart-wrapper">
-                <canvas id="rrgChart"></canvas>
-            </div>
+            <div id="rrgPlotly"></div>
         </div>
     </div>
 
