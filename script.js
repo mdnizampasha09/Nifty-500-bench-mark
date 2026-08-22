@@ -8,54 +8,50 @@ async function fetchDataAndRender() {
         if (!response.ok) throw new Error("Could not load data.json");
         const json = await response.json();
 
-        // 1. Update Last Updated Text
+        // 1. Set Timestamp
         const timestampEl = document.getElementById("last-updated");
         if (timestampEl && json.last_updated) {
             timestampEl.textContent = `Last Scraped: ${json.last_updated}`;
         }
 
-        // 2. Populate Statistics & Table
-        populateStatsAndTable(json.data || []);
+        // 2. Populate Quadrant Lists
+        populateQuadrants(json.data || []);
 
         // 3. Render Chart
         renderChart(json.data || []);
     } catch (err) {
-        console.error("Failed to render dashboard:", err);
+        console.error("Failed to load dashboard data:", err);
     }
 }
 
-function populateStatsAndTable(sectors) {
-    const counts = { Leading: 0, Weakening: 0, Lagging: 0, Improving: 0 };
-    const tbody = document.getElementById("stocks-table-body");
-    if (tbody) tbody.innerHTML = "";
+function populateQuadrants(sectors) {
+    const categories = {
+        Improving: { list: document.getElementById("list-improving"), badge: document.getElementById("badge-improving"), count: 0 },
+        Leading: { list: document.getElementById("list-leading"), badge: document.getElementById("badge-leading"), count: 0 },
+        Weakening: { list: document.getElementById("list-weakening"), badge: document.getElementById("badge-weakening"), count: 0 },
+        Lagging: { list: document.getElementById("list-lagging"), badge: document.getElementById("badge-lagging"), count: 0 }
+    };
+
+    // Reset lists
+    Object.values(categories).forEach(c => {
+        if (c.list) c.list.innerHTML = "";
+    });
 
     sectors.forEach(sec => {
-        if (counts[sec.quadrant] !== undefined) {
-            counts[sec.quadrant]++;
-        }
-
-        if (tbody) {
-            const tr = document.createElement("tr");
-            tr.innerHTML = `
-                <td><strong>${sec.sector}</strong></td>
-                <td><code>${sec.ticker}</code></td>
-                <td>${sec.x}</td>
-                <td>${sec.y}</td>
-                <td><span class="badge ${sec.quadrant.toLowerCase()}">${sec.quadrant}</span></td>
-            `;
-            tbody.appendChild(tr);
+        const target = categories[sec.quadrant];
+        if (target && target.list) {
+            target.count++;
+            const li = document.createElement("li");
+            li.className = "sector-item";
+            li.innerHTML = `<span class="sector-dot"></span><span>${sec.sector}</span>`;
+            target.list.appendChild(li);
         }
     });
 
-    const setStat = (id, val) => {
-        const el = document.getElementById(id);
-        if (el) el.textContent = val;
-    };
-
-    setStat("stat-leading", counts.Leading);
-    setStat("stat-weakening", counts.Weakening);
-    setStat("stat-lagging", counts.Lagging);
-    setStat("stat-improving", counts.Improving);
+    // Update count badges
+    Object.values(categories).forEach(c => {
+        if (c.badge) c.badge.textContent = c.count;
+    });
 }
 
 function renderChart(sectors) {
@@ -63,7 +59,11 @@ function renderChart(sectors) {
     if (!canvas || typeof Chart === "undefined") return;
 
     const datasets = sectors.map((sec, i) => {
-        const colors = ["#22c55e", "#3b82f6", "#f59e0b", "#ef4444", "#a855f7", "#06b6d4", "#ec4899", "#14b8a6", "#f97316"];
+        const colors = [
+            "#22c55e", "#3b82f6", "#f59e0b", "#ef4444", "#a855f7",
+            "#06b6d4", "#ec4899", "#14b8a6", "#f97316", "#84cc16",
+            "#eab308", "#6366f1", "#d946ef", "#64748b"
+        ];
         const color = colors[i % colors.length];
 
         return {
@@ -97,7 +97,7 @@ function renderChart(sectors) {
             },
             plugins: {
                 legend: {
-                    labels: { color: "#cbd5e1" }
+                    labels: { color: "#cbd5e1", boxWidth: 12 }
                 }
             }
         }
