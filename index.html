@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nifty 500 Relative Rotation Graph</title>
     <link rel="stylesheet" href="styles.css">
-    <!-- Using stable Cloudflare CDN instead of jsdelivr -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 </head>
 <body>
@@ -16,52 +15,55 @@
             <div id="last-updated" class="timestamp">Fetching data...</div>
         </header>
 
-        <div class="grid-stats">
-            <div class="card stat-card">
-                <h3>Leading Sectors</h3>
-                <span id="stat-leading" class="stat-num text-green">0</span>
-                <p>Strong Momentum & RS</p>
+        <!-- 4-Quadrant Sector Layout -->
+        <div class="quadrant-grid">
+            <!-- Improving (Blue) -->
+            <div class="quadrant-card improving">
+                <div class="quadrant-header">
+                    <span class="title">Improving</span>
+                    <span id="badge-improving" class="count-badge">0</span>
+                </div>
+                <div class="quadrant-sub">Lagging RS, Strong Momentum</div>
+                <ul id="list-improving" class="sector-list"></ul>
             </div>
-            <div class="card stat-card">
-                <h3>Weakening Sectors</h3>
-                <span id="stat-weakening" class="stat-num text-yellow">0</span>
-                <p>High RS, Slowing Momentum</p>
+
+            <!-- Leading (Green) -->
+            <div class="quadrant-card leading">
+                <div class="quadrant-header">
+                    <span class="title">Leading</span>
+                    <span id="badge-leading" class="count-badge">0</span>
+                </div>
+                <div class="quadrant-sub">High RS, Strong Momentum</div>
+                <ul id="list-leading" class="sector-list"></ul>
             </div>
-            <div class="card stat-card">
-                <h3>Lagging Sectors</h3>
-                <span id="stat-lagging" class="stat-num text-red">0</span>
-                <p>Underperforming Baseline</p>
+
+            <!-- Weakening (Orange/Yellow) -->
+            <div class="quadrant-card weakening">
+                <div class="quadrant-header">
+                    <span class="title">Weakening</span>
+                    <span id="badge-weakening" class="count-badge">0</span>
+                </div>
+                <div class="quadrant-sub">High RS, Slowing Momentum</div>
+                <ul id="list-weakening" class="sector-list"></ul>
             </div>
-            <div class="card stat-card">
-                <h3>Improving Sectors</h3>
-                <span id="stat-improving" class="stat-num text-blue">0</span>
-                <p>Gaining Relative Momentum</p>
+
+            <!-- Lagging (Red) -->
+            <div class="quadrant-card lagging">
+                <div class="quadrant-header">
+                    <span class="title">Lagging</span>
+                    <span id="badge-lagging" class="count-badge">0</span>
+                </div>
+                <div class="quadrant-sub">Low RS, Slowing Momentum</div>
+                <ul id="list-lagging" class="sector-list"></ul>
             </div>
         </div>
 
+        <!-- Scatter Map Chart -->
         <div class="card chart-card">
             <h2>Relative Rotation Scatter Map</h2>
             <div class="chart-wrapper">
                 <canvas id="rrgChart"></canvas>
             </div>
-        </div>
-
-        <div class="card table-card">
-            <h2>Sector Details</h2>
-            <table class="styled-table">
-                <thead>
-                    <tr>
-                        <th>Sector</th>
-                        <th>Ticker</th>
-                        <th>RS-Ratio (X)</th>
-                        <th>RS-Momentum (Y)</th>
-                        <th>Quadrant</th>
-                    </tr>
-                </thead>
-                <tbody id="stocks-table-body">
-                    <tr><td colspan="5" style="text-align:center;">Loading sector data...</td></tr>
-                </tbody>
-            </table>
         </div>
     </div>
 
