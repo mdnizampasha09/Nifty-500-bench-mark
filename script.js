@@ -98,12 +98,22 @@ function getActiveDataset() {
 async function fetchDataAndRender() {
     try {
         const response = await fetch("data.json?t=" + new Date().getTime());
-        if (!response.ok) throw new Error("Could not load data.json");
+        if (!response.ok) throw new Error(`HTTP ${response.status}: Could not load data.json`);
         globalData = await response.json();
+
+        // Validate data structure
+        if (!globalData.daily && !globalData.data) {
+            throw new Error("No valid data found in JSON");
+        }
 
         const timestampEl = document.getElementById("last-updated");
         if (timestampEl && globalData.last_updated) {
             timestampEl.textContent = `Last Scraped: ${globalData.last_updated}`;
+        }
+
+        // Display benchmark info
+        if (globalData.benchmark) {
+            console.log(`📊 Using Benchmark: ${globalData.benchmark}`);
         }
 
         const dataset = getActiveDataset();
@@ -113,6 +123,10 @@ async function fetchDataAndRender() {
         updateDashboard();
     } catch (err) {
         console.error("Dashboard error:", err);
+        const timestampEl = document.getElementById("last-updated");
+        if (timestampEl) {
+            timestampEl.textContent = `❌ Error: ${err.message}`;
+        }
     }
 }
 
@@ -213,8 +227,8 @@ function renderActiveChart() {
 }
 
 function renderPlotlyRRG(sectors) {
-    const theme = BG_THEME_PALETTES[currentBgTheme] || BG_THEME_PALETTES.midnight;
-    const defaultColors = ["#00f0ff", "#39ff14", "#ff007f", "#ffe600", "#b026ff", "#ff5e00", "#00ffa3", "#ff003c", "#7000ff", "#00b8ff", "#ff80df", "#9dff00", "#22c55e", "#3b82f6", "#f59e0b", "#ef4444"];
+    const theme = BG_THEME_PALETTES[currentBgTheme] || BG_THEME_PALETTES.cleanLight;
+    const defaultColors = ["#00f0ff", "#39ff14", "#ff007f", "#ffe600", "#b026ff", "#ff5e00", "#00ffa3", "#ff003c", "#7000ff", "#00b8ff", "#ff80df", "#9dff00", "#22c55e", "#3b82f6", "#f59e0b"];
     
     const traces = [];
     let allX = [100];
