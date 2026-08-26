@@ -18,22 +18,11 @@ NSE_SECTORS = {
     "MEDIA": "^CNXMEDIA",
     "PSU BANK": "^CNXPSUBANK",
     "MIDCAP": "^NSEMDCP50",
-    "SMALLCAP": "^NSMIDCP",  # Fixed: SMALLCAP index
-    "SENSEX": "^BSESN",
-    "FINNIFTY": "HDFCBANK.NS",
-    "PVT BANK": "ICICIBANK.NS",
-    "CONSR DURBL": "TITAN.NS",
-    "CONSUMPTION": "ITC.NS",
-    "SERVICES": "INFY.NS",
-    "OIL & GAS": "RELIANCE.NS",
-    "COMMODITIES": "TATASTEEL.NS",
-    "DEFENCE": "BEL.NS",
-    "CHEMICALS": "PIDILITIND.NS",
-    "CAPITAL MRKT": "BSE.NS"
+    "SMALLCAP": "^NSMIDCP"
 }
 
-# Use Nifty 500 as the primary benchmark (not ^CRSLDX which doesn't exist)
-BENCHMARK = "^NSEI"  # Nifty 50 (proxy for Nifty 500)
+# Use Nifty 500 as the primary benchmark (^CRSLDX is the correct ticker)
+BENCHMARK = "^CRSLDX"  # Nifty 500 Index
 
 def fetch_data(sectors, benchmark_ticker, period="2y"):
     """
