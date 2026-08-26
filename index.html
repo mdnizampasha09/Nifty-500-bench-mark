@@ -105,9 +105,24 @@
             </div>
         </div>
 
-        <!-- RRG Chart Area -->
-        <div class="card chart-card">
-            <div id="rrgPlotly"></div>
+        <!-- Chart and All Sectors List Container -->
+        <div class="chart-sector-container">
+            <!-- RRG Chart Area -->
+            <div class="card chart-card">
+                <div id="rrgPlotly"></div>
+            </div>
+
+            <!-- All Sectors List Panel (NOT segregated by quadrant) -->
+            <div class="card sector-list-panel">
+                <div class="sector-panel-header">
+                    <h3>📊 All Sectors</h3>
+                    <div class="search-box">
+                        <input type="text" id="sector-search" placeholder="Search sectors...">
+                    </div>
+                </div>
+                
+                <div class="sector-list" id="all-sectors-list"></div>
+            </div>
         </div>
     </div>
 
