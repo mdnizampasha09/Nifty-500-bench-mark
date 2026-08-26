@@ -177,7 +177,7 @@ function renderPlotlyRRG(sectors) {
             name: sec.sector,
             text: trailSlice.map((_, i) => (i === trailSlice.length - 1 ? ` <b>${sec.sector}</b>` : '')),
             textposition: 'top right',
-            textfont: { size: 12, color: currentBgTheme === 'light' ? '#0f172a' : '#f8fafc' },
+            textfont: { size: 12, color: theme.font },
             line: { shape: 'spline', smoothing: 1.2, width: 2.5, color: sectorColor },
             marker: { size: markerSizes, color: sectorColor }
         });
