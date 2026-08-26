@@ -3,6 +3,7 @@ let currentMode = "daily";
 let currentTail = 5;
 let currentBgTheme = "cleanLight";
 let selectedSectors = new Set();
+let allSectorsData = [];
 
 // Background Color Mapping for Plotly Chart Elements
 const BG_THEME_PALETTES = {
@@ -26,6 +27,14 @@ const BG_THEME_PALETTES = {
 
   // Solarized Light
   solarizedLight: { paper: '#fdf6e3', plot: '#eee8d5', grid: '#dcd3b8', font: '#657b83' }
+};
+
+// Status color mapping
+const STATUS_COLORS = {
+  Improving: { bg: 'rgba(59, 130, 246, 0.2)', text: '#60a5fa', border: '#60a5fa', icon: '🟦' },
+  Leading: { bg: 'rgba(34, 197, 94, 0.2)', text: '#4ade80', border: '#4ade80', icon: '🟩' },
+  Weakening: { bg: 'rgba(251, 191, 36, 0.2)', text: '#fbbf24', border: '#fbbf24', icon: '🟨' },
+  Lagging: { bg: 'rgba(239, 68, 68, 0.2)', text: '#f87171', border: '#f87171', icon: '🟥' }
 };
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -71,6 +80,14 @@ function setupEventListeners() {
             });
         }
     });
+
+    // Search functionality for all sectors list
+    const searchInput = document.getElementById("sector-search");
+    if (searchInput) {
+        searchInput.addEventListener("input", (e) => {
+            filterAllSectorsList(e.target.value.toLowerCase());
+        });
+    }
 }
 
 function getActiveDataset() {
@@ -90,6 +107,7 @@ async function fetchDataAndRender() {
         }
 
         const dataset = getActiveDataset();
+        allSectorsData = dataset;
         dataset.forEach(s => selectedSectors.add(s.sector));
 
         updateDashboard();
@@ -100,7 +118,9 @@ async function fetchDataAndRender() {
 
 function updateDashboard() {
     const allSectors = getActiveDataset();
+    allSectorsData = allSectors;
     populateQuadrantsWithCheckboxes(allSectors);
+    populateAllSectorsList(allSectors);
     renderActiveChart();
 }
 
@@ -144,6 +164,48 @@ function populateQuadrantsWithCheckboxes(sectors) {
     });
 }
 
+function populateAllSectorsList(sectors) {
+    const listContainer = document.getElementById("all-sectors-list");
+    if (!listContainer) return;
+    
+    listContainer.innerHTML = "";
+    
+    // Sort sectors alphabetically
+    const sortedSectors = [...sectors].sort((a, b) => a.sector.localeCompare(b.sector));
+    
+    sortedSectors.forEach(sector => {
+        const item = document.createElement("div");
+        item.className = "sector-item";
+        item.setAttribute("data-sector-name", sector.sector.toLowerCase());
+        
+        const colors = STATUS_COLORS[sector.quadrant] || STATUS_COLORS.Lagging;
+        item.style.borderLeftColor = colors.border;
+        
+        const statusBadge = document.createElement("span");
+        statusBadge.className = `sector-item-status ${sector.quadrant.toLowerCase()}`;
+        statusBadge.style.backgroundColor = colors.bg;
+        statusBadge.style.color = colors.text;
+        statusBadge.innerHTML = `<span class="status-icon">${colors.icon}</span><span>${sector.quadrant}</span>`;
+        
+        item.innerHTML = `<span>${sector.sector}</span>`;
+        item.appendChild(statusBadge);
+        
+        listContainer.appendChild(item);
+    });
+}
+
+function filterAllSectorsList(searchTerm) {
+    const items = document.querySelectorAll(".sector-item");
+    items.forEach(item => {
+        const sectorName = item.getAttribute("data-sector-name");
+        if (sectorName.includes(searchTerm)) {
+            item.classList.remove("hidden");
+        } else {
+            item.classList.add("hidden");
+        }
+    });
+}
+
 function renderActiveChart() {
     const allSectors = getActiveDataset();
     const activeSectors = allSectors.filter(s => selectedSectors.has(s.sector));
@@ -152,7 +214,7 @@ function renderActiveChart() {
 
 function renderPlotlyRRG(sectors) {
     const theme = BG_THEME_PALETTES[currentBgTheme] || BG_THEME_PALETTES.midnight;
-    const defaultColors = ["#00f0ff", "#39ff14", "#ff007f", "#ffe600", "#b026ff", "#ff5e00", "#00ffa3", "#ff003c", "#7000ff", "#00b8ff", "#ff80df", "#9dff00", "#22c55e", "#3b82f6", "#f59e0b", "#ef4444", "#a855f7", "#06b6d4"];
+    const defaultColors = ["#00f0ff", "#39ff14", "#ff007f", "#ffe600", "#b026ff", "#ff5e00", "#00ffa3", "#ff003c", "#7000ff", "#00b8ff", "#ff80df", "#9dff00", "#22c55e", "#3b82f6", "#f59e0b", "#ef4444"];
     
     const traces = [];
     let allX = [100];
