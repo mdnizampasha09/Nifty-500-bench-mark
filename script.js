@@ -1,23 +1,31 @@
 let globalData = null;
 let currentMode = "daily";
 let currentTail = 5;
-let currentBgTheme = "midnight";
+let currentBgTheme = "cleanLight";
 let selectedSectors = new Set();
 
 // Background Color Mapping for Plotly Chart Elements
 const BG_THEME_PALETTES = {
-    midnight: { paper: '#131d31', plot: '#080d1a', grid: '#223250', font: '#94a3b8' },
-    deepblack: { paper: '#111111', plot: '#000000', grid: '#262626', font: '#a3a3a3' },
-    charcoal: { paper: '#27272a', plot: '#18181b', grid: '#3f3f46', font: '#a1a1aa' },
-    cyberpunk: { paper: '#1c0a35', plot: '#0f051d', grid: '#3c1271', font: '#c4b5fd' },
-    forest: { paper: '#0b2e1e', plot: '#051b11', grid: '#144f34', font: '#6ee7b7' },
-    dracula: { paper: '#44475a', plot: '#282a36', grid: '#6272a4', font: '#bd93f9' },
-    nord: { paper: '#3b4252', plot: '#2e3440', grid: '#4c566a', font: '#88c0d0' },
-    espresso: { paper: '#2c1f17', plot: '#1c140e', grid: '#443024', font: '#d97706' },
-    burgundy: { paper: '#300a14', plot: '#1a050b', grid: '#521223', font: '#fda4af' },
-    graphite: { paper: '#2a313d', plot: '#1f242d', grid: '#3e4859', font: '#94a3b8' },
-    solarized: { paper: '#073642', plot: '#002b36', grid: '#586e75', font: '#2aa198' },
-    light: { paper: '#ffffff', plot: '#f1f5f9', grid: '#cbd5e1', font: '#475569' }
+  // Pure / Crisp Light
+  cleanLight: { paper: '#ffffff', plot: '#f8fafc', grid: '#e2e8f0', font: '#1e293b' },
+
+  // Warm Paper / Sand
+  warmPaper: { paper: '#fbf9f5', plot: '#f3efe6', grid: '#e5dec9', font: '#4a3e3d' },
+
+  // Cool Slate / Ice Blue
+  iceBlue: { paper: '#f4f7fb', plot: '#e9f0f8', grid: '#d1e0f0', font: '#1e3a5f' },
+
+  // Mint / Sage Mist
+  softMint: { paper: '#f4f9f6', plot: '#e8f3ec', grid: '#cde4d5', font: '#234e38' },
+
+  // Lavender / Soft Purple
+  lavender: { paper: '#faf7fd', plot: '#f1ebfa', grid: '#ded2f5', font: '#3b2d54' },
+
+  // Rose / Blush
+  softRose: { paper: '#fff7f8', plot: '#faebed', grid: '#f3d2d7', font: '#5c2d36' },
+
+  // Solarized Light
+  solarizedLight: { paper: '#fdf6e3', plot: '#eee8d5', grid: '#dcd3b8', font: '#657b83' }
 };
 
 document.addEventListener("DOMContentLoaded", () => {
